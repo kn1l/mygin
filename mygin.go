@@ -1,39 +1,42 @@
 package mygin
 
 import (
-	"fmt"
 	"net/http"
 )
 
-// The HandlerFunc type is
-type HandlerFunc func(http.ResponseWriter, *http.Request)
+type HandlerFunc func(*Context)
+
+type HandlerFuncChain []HandlerFunc
 
 // Engine implements the interface Handler in net/http
 type Engine struct {
-	Router map[string]HandlerFunc
+	RouterGroup
+
+	trees methodTrees
 }
 
 // implements Handler
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "404 Not Found")
 }
 
 // New returns an instance of *Engine
 func New() *Engine {
-	engine := &Engine{
-		Router: make(map[string]HandlerFunc),
-	}
+	engine := &Engine{}
 	return engine
 }
 
-// GET
-func GET(route string, f HandlerFunc) {
+func (engine *Engine) addRoute(method, path string, handler HandlerFuncChain) {
 
 }
 
-// TODO
-func Handle() {
+func (engine *Engine) GET(relativePath string, handlers ...HandlerFunc) {
+	engine.Handle("GET", relativePath, handlers...)
+}
 
+func (engine *Engine) Handle(method, relativePath string, handlers ...HandlerFunc) {
+	root := engine.trees.getMethodTree(method)
+	node := root.insert(relativePath)
+	node.setHandlers(handlers)
 }
 
 func (engine *Engine) Run(addr string) error {
