@@ -46,34 +46,47 @@ func newNode(path string) *node {
 }
 
 // search searchs the node by path
-func (n *node) search(path string) *node {
+func (root *node) search(path string) *node {
+	n := root
 	pathlist := strings.Split(path[1:], "/")
-	subpath := "/" + pathlist[0]
-	for _, child := range n.children {
-		if child.path == subpath {
-			if len(pathlist) == 1 {
-				return child
-			} else if len(pathlist) > 1 {
-				return child.search("/" + strings.Join(pathlist[1:], "/"))
+	for _, p := range pathlist {
+		subpath := "/" + p
+		isFound := false
+		for _, child := range n.children {
+			if child.path == subpath {
+				isFound = true
+				n = child
+				break
 			}
 		}
+		if !isFound {
+			return nil
+		}
 	}
-	return nil
+	return n
 }
 
 // insert builds the tree by path and returns the final child node
-func (n *node) insert(path string) *node {
+func (root *node) insert(path string) *node {
+	n := root
 	pathlist := strings.Split(path[1:], "/")
-	subpath := "/" + pathlist[0]
-
-	child := newNode(subpath)
-	n.children = append(n.children, child)
-	if len(pathlist) == 1 {
-		return child
-	} else if len(pathlist) > 1 {
-		return child.insert("/" + strings.Join(pathlist[1:], "/"))
+	for _, p := range pathlist {
+		subpath := "/" + p
+		isFound := false
+		for _, child := range n.children {
+			if child.path == subpath {
+				isFound = true
+				n = child
+				break
+			}
+		}
+		if !isFound {
+			child := newNode(subpath)
+			n.children = append(n.children, child)
+			n = child
+		}
 	}
-	return nil
+	return n
 }
 
 func (n *node) setHandlers(handlers HandlerFuncChain) {
