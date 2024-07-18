@@ -29,14 +29,14 @@ func (engine *Engine) addRoute(method, path string, handler HandlerFuncChain) {
 
 }
 
-func (engine *Engine) GET(relativePath string, handlers ...HandlerFunc) {
-	engine.Handle("GET", relativePath, handlers...)
-}
-
 func (engine *Engine) Handle(method, relativePath string, handlers ...HandlerFunc) {
 	root := engine.trees.getMethodTree(method)
 	node := root.insert(relativePath)
 	node.setHandlers(handlers)
+}
+
+func (engine *Engine) GET(relativePath string, handlers ...HandlerFunc) {
+	engine.Handle("GET", relativePath, handlers...)
 }
 
 func (engine *Engine) Run(addr string) error {

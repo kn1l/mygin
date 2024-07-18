@@ -67,8 +67,7 @@ func (root *node) search(path string) *node {
 }
 
 // insert builds the tree by path and returns the final child node
-func (root *node) insert(path string) *node {
-	n := root
+func (n *node) insert(path string) *node {
 	pathlist := strings.Split(path[1:], "/")
 	for _, p := range pathlist {
 		subpath := "/" + p
