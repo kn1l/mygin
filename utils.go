@@ -1,5 +1,7 @@
 package mygin
 
+import "fmt"
+
 func resolveAddress(addr ...string) string {
 	switch len(addr) {
 	case 0:
@@ -9,4 +11,9 @@ func resolveAddress(addr ...string) string {
 	default:
 		panic("too many parameters")
 	}
+}
+
+func errorPrint(err string) {
+	fmt.Printf("error!!!: %s\n", err)
+	panic("error!")
 }
