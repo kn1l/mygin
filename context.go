@@ -22,9 +22,9 @@ type Context struct {
 	index    int
 	Params   Params
 
-	Method string
-	Path   string
-	engine *Engine
+	Method   string
+	Pathlist []string
+	engine   *Engine
 }
 
 func (engine *Engine) newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -32,50 +32,32 @@ func (engine *Engine) newContext(w http.ResponseWriter, req *http.Request) *Cont
 		Writer:  w,
 		Request: req,
 		Method:  req.Method,
-		Path:    req.URL.Path,
 		engine:  engine,
 	}
+	pathlist := make([]string, 0)
+	pathlist = append(pathlist, "/")
+	for _, p := range strings.Split(req.URL.Path, "/") {
+		if p != "" {
+			pathlist = append(pathlist, "/"+p)
+		}
+	}
+	c.Pathlist = pathlist
+
 	c.setHandlers()
 	return c
 }
 
 func (c *Context) setHandlers() {
-	pathlist := make([]string, 0)
-	for _, p := range strings.Split(c.Path, "/") {
-		if p != "" {
-			pathlist = append(pathlist, p)
-		}
-	}
+
 	root := c.engine.trees.getMethodTree(c.Method)
-	n := root
-	for _, p := range pathlist {
-		subpath := "/" + p
-		isFound := false
-		for _, child := range n.children {
-			if child.path == subpath {
-				isFound = true
-				n = child
-				break
-			}
-		}
-		if !isFound {
-			c.handlers = append(c.handlers, func(c *Context) {
-				c.String(http.StatusNotFound, "404 not Found !!!")
-			})
-		}
+
+	if node := root.search(c, 0); node != nil && node.handlers != nil {
+		c.handlers = node.handlers
+	} else {
+		c.handlers = append(c.handlers, func(c *Context) {
+			c.String(http.StatusNotFound, "404 not Found !!!")
+		})
 	}
-
-	// if node := root.search(c.Path); node != nil {
-	// 	c.handlers = node.handlers
-	// } else {
-	// 	c.handlers = append(c.handlers, func(c *Context) {
-	// 		c.String(http.StatusNotFound, "404 not Found !!!")
-	// 	})
-	// }
-}
-
-func (c *Context) setParams() {
-
 }
 
 func (c *Context) Next() {
@@ -88,6 +70,11 @@ func (c *Context) Next() {
 }
 
 func (c *Context) Param(key string) string {
+	for _, p := range c.Params {
+		if p.Key == key {
+			return p.Value
+		}
+	}
 	return ""
 }
 
