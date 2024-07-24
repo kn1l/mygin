@@ -29,30 +29,35 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 // New returns an instance of *Engine
 func New() *Engine {
 	engine := &Engine{}
+	group := RouterGroup{
+		fullPath: "/",
+		engine:   engine,
+	}
+	engine.RouterGroup = group
 	return engine
 }
 
 func Default() *Engine {
-	return New()
+	engine := New()
+	return engine
 }
 
-func (engine *Engine) addRoute(method, path string, handler HandlerFuncChain) {
-
-}
-
-func (engine *Engine) Group(path string, handlers ...HandlerFunc) *RouterGroup {
-	// routers := engine
-	return nil
-}
-
-func (engine *Engine) Handle(method, relativePath string, handlers ...HandlerFunc) {
+func (engine *Engine) addRoute(method, path string, handlers HandlerFuncChain) {
 	root := engine.trees.getMethodTree(method)
-	node := root.insert(relativePath)
+	node := root.insert(path)
 	node.setHandlers(handlers)
 }
 
-func (engine *Engine) GET(relativePath string, handlers ...HandlerFunc) {
-	engine.Handle("GET", relativePath, handlers...)
+func (engine *Engine) Group(absolutePath string, handlers ...HandlerFunc) *RouterGroup {
+	return nil
+}
+
+func (engine *Engine) Handle(method, path string, handlers ...HandlerFunc) {
+	engine.addRoute(method, path, handlers)
+}
+
+func (engine *Engine) GET(path string, handlers ...HandlerFunc) {
+	engine.Handle(http.MethodGet, path, handlers...)
 }
 
 func (engine *Engine) Run(addr ...string) error {

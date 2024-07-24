@@ -1,26 +1,28 @@
 package mygin
 
+import "net/http"
+
 type RouterGroup struct {
 	Handlers HandlerFuncChain
-	Path     string
+	fullPath string
 	engine   *Engine
 }
 
-func newRouterGroup(path string) *RouterGroup {
-	routers := &RouterGroup{}
-	return routers
-}
-
-func (group *RouterGroup) Group(path string) *RouterGroup {
+func (engine *Engine) newRouterGroup(path string) *RouterGroup {
+	group := &RouterGroup{
+		fullPath: path,
+	}
 	return group
 }
 
-func (routers *RouterGroup) Handle(method, relativePath string, handlers ...HandlerFunc) {
-	root := routers.engine.trees.getMethodTree(method)
-	node := root.insert(relativePath)
-	node.setHandlers(handlers)
+func (group *RouterGroup) Group(relativePath string) *RouterGroup {
+	return group
 }
 
-func (routers *RouterGroup) GET(relativePath string, handlers ...HandlerFunc) {
-	routers.Handle("GET", relativePath, handlers...)
+func (group *RouterGroup) Handle(method, relativePath string, handlers ...HandlerFunc) {
+
+}
+
+func (group *RouterGroup) GET(relativePath string, handlers ...HandlerFunc) {
+	group.Handle(http.MethodGet, relativePath, handlers...)
 }

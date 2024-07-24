@@ -3,7 +3,6 @@ package mygin
 import (
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 type Param struct {
@@ -34,14 +33,7 @@ func (engine *Engine) newContext(w http.ResponseWriter, req *http.Request) *Cont
 		Method:  req.Method,
 		engine:  engine,
 	}
-	pathlist := make([]string, 0)
-	pathlist = append(pathlist, "/")
-	for _, p := range strings.Split(req.URL.Path, "/") {
-		if p != "" {
-			pathlist = append(pathlist, "/"+p)
-		}
-	}
-	c.Pathlist = pathlist
+	c.Pathlist = splitPath(req.URL.Path)
 
 	c.setHandlers()
 	return c

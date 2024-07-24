@@ -1,6 +1,9 @@
 package mygin
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func resolveAddress(addr ...string) string {
 	switch len(addr) {
@@ -11,6 +14,17 @@ func resolveAddress(addr ...string) string {
 	default:
 		panic("too many parameters")
 	}
+}
+
+func splitPath(path string) []string {
+	pathlist := make([]string, 0)
+	pathlist = append(pathlist, "/")
+	for _, p := range strings.Split(path, "/") {
+		if p != "" {
+			pathlist = append(pathlist, "/"+p)
+		}
+	}
+	return pathlist
 }
 
 func errorPrint(err string) {
