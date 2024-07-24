@@ -23,7 +23,6 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for context.index < len(context.handlers) {
 		context.Next()
 	}
-	// fmt.Fprintf(w, "\ndebug: %s\n", context.Path)
 }
 
 // New returns an instance of *Engine
@@ -45,11 +44,15 @@ func Default() *Engine {
 func (engine *Engine) addRoute(method, path string, handlers HandlerFuncChain) {
 	root := engine.trees.getMethodTree(method)
 	node := root.insert(path)
-	node.setHandlers(handlers)
+	node.handlers = append(node.handlers, handlers...)
 }
 
 func (engine *Engine) Group(absolutePath string, handlers ...HandlerFunc) *RouterGroup {
-	return nil
+	return &RouterGroup{
+		fullPath: absolutePath,
+		Handlers: handlers,
+		engine:   engine,
+	}
 }
 
 func (engine *Engine) Handle(method, path string, handlers ...HandlerFunc) {

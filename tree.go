@@ -123,7 +123,3 @@ func (n *node) insert(path string) *node {
 	}
 	return n
 }
-
-func (n *node) setHandlers(handlers HandlerFuncChain) {
-	n.handlers = append(n.handlers, handlers...)
-}
