@@ -1,7 +1,6 @@
 package mygin
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -19,11 +18,16 @@ type Engine struct {
 // implements Handler
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	context := engine.newContext(w, req)
-	println(len(context.handlers))
 	// handlers
 	for context.index < len(context.handlers) {
 		context.Next()
 	}
+}
+
+func (engine *Engine) Run(addr ...string) error {
+	address := resolveAddress(addr...)
+	debugPrint("Listening and serving HTTP on %s", address)
+	return http.ListenAndServe(address, engine)
 }
 
 // New returns an instance of *Engine
@@ -48,57 +52,10 @@ func (engine *Engine) addRoute(method, path string, handlers HandlerFuncChain) {
 	node.handlers = handlers
 }
 
-func (engine *Engine) Group(absolutePath string, handlers ...HandlerFunc) *RouterGroup {
-	if absolutePath == "/" {
-		return &engine.RouterGroup
-	}
-	group := &RouterGroup{
-		fullPath: absolutePath,
-		engine:   engine,
-	}
-	group.Handlers = append(engine.RouterGroup.Handlers, handlers...)
-	return group
+func (engine *Engine) LoadHTMLFiles(file ...string) {
+
 }
 
-func (engine *Engine) Use(handlers ...HandlerFunc) {
-	engine.RouterGroup.Handlers = append(engine.RouterGroup.Handlers, handlers...)
-}
+func (engine *Engine) LoadHTMLGlob(pattern string) {
 
-func (engine *Engine) Handle(method, path string, handlers ...HandlerFunc) {
-	mergedHandlers := append(engine.RouterGroup.Handlers, handlers...)
-	engine.addRoute(method, path, mergedHandlers)
-}
-
-func (engine *Engine) GET(path string, handlers ...HandlerFunc) {
-	engine.Handle(http.MethodGet, path, handlers...)
-}
-
-func (engine *Engine) POST(path string, handlers ...HandlerFunc) {
-	engine.Handle(http.MethodPost, path, handlers...)
-}
-
-func (engine *Engine) PUT(path string, handlers ...HandlerFunc) {
-	engine.Handle(http.MethodPut, path, handlers...)
-}
-
-func (engine *Engine) DELETE(path string, handlers ...HandlerFunc) {
-	engine.Handle(http.MethodDelete, path, handlers...)
-}
-
-func (engine *Engine) HEAD(path string, handlers ...HandlerFunc) {
-	engine.Handle(http.MethodHead, path, handlers...)
-}
-
-func (engine *Engine) OPTIONS(path string, handlers ...HandlerFunc) {
-	engine.Handle(http.MethodOptions, path, handlers...)
-}
-
-func (engine *Engine) PATCH(path string, handlers ...HandlerFunc) {
-	engine.Handle(http.MethodPatch, path, handlers...)
-}
-
-func (engine *Engine) Run(addr ...string) error {
-	address := resolveAddress(addr...)
-	fmt.Printf("address: %s\n", address)
-	return http.ListenAndServe(address, engine)
 }

@@ -28,6 +28,14 @@ func splitPath(path string) []string {
 }
 
 func errorPrint(err string) {
-	fmt.Printf("error!!!: %s\n", err)
+	fmt.Printf("[error!!!] %s\n", err)
 	panic("error!")
+}
+
+func debugPrint(format string, a ...any) {
+	fmt.Printf("[MYGIN-debug] "+format+"\n", a...)
+}
+
+func normalPrint(format string, a ...any) {
+	fmt.Printf("[MYGIN] "+format+"\n", a...)
 }

@@ -1,9 +1,13 @@
 package mygin
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
+
+// map[string]any
+type H map[string]interface{}
 
 type Param struct {
 	Key   string
@@ -70,11 +74,19 @@ func (c *Context) Param(key string) string {
 	return ""
 }
 
-func (c *Context) String(statuscode int, format string, values ...any) {
-	c.Writer.WriteHeader(statuscode)
+func (c *Context) String(code int, format string, values ...any) {
+	c.Writer.WriteHeader(code)
+	c.Writer.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(c.Writer, format, values...)
 }
 
-func (c *Context) Html() {
+func (c *Context) JSON(code int, obj any) {
+	c.Writer.WriteHeader(code)
+	c.Writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(c.Writer).Encode(obj)
+}
 
+func (c *Context) HTML(code int, name string, obj any) {
+	c.Writer.WriteHeader(code)
+	c.Writer.Header().Set("Content-Type", "text/html")
 }

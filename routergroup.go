@@ -8,10 +8,19 @@ type RouterGroup struct {
 	engine   *Engine
 }
 
-func (group *RouterGroup) Group(relativePath string, handlers ...HandlerFunc) *RouterGroup {
+func (group *RouterGroup) Group(relativePath string, handlers ...HandlerFunc) (g *RouterGroup) {
 	absolutePath := group.calcAbsolutePath(relativePath)
+	if absolutePath == "/" {
+		g = &group.engine.RouterGroup
+	} else {
+		g = &RouterGroup{
+			fullPath: absolutePath,
+			engine:   group.engine,
+		}
+	}
 	mergedHandlers := append(group.Handlers, handlers...)
-	return group.engine.Group(absolutePath, mergedHandlers...)
+	g.Handlers = mergedHandlers
+	return g
 }
 
 func (group *RouterGroup) Use(handlers ...HandlerFunc) {
@@ -22,6 +31,7 @@ func (group *RouterGroup) Handle(method, relativePath string, handlers ...Handle
 	absolutePath := group.calcAbsolutePath(relativePath)
 	mergedHandlers := append(group.Handlers, handlers...)
 	group.engine.addRoute(method, absolutePath, mergedHandlers)
+	debugPrint(method+"\t"+absolutePath+"\t--> (%v handlers)", len(mergedHandlers))
 }
 
 func (group *RouterGroup) GET(relativePath string, handlers ...HandlerFunc) {
@@ -62,4 +72,8 @@ func (group *RouterGroup) calcAbsolutePath(relativePath string) string {
 		absolutePath = group.fullPath + relativePath
 	}
 	return absolutePath
+}
+
+func (group *RouterGroup) Static(relativePath string, root string) {
+
 }
