@@ -26,6 +26,7 @@ type Context struct {
 	Params   Params
 
 	Method   string
+	Path     string
 	Pathlist []string
 	engine   *Engine
 }
@@ -35,24 +36,24 @@ func (engine *Engine) newContext(w http.ResponseWriter, req *http.Request) *Cont
 		Writer:  w,
 		Request: req,
 		Method:  req.Method,
+		Path:    req.URL.Path,
 		engine:  engine,
 	}
 	c.Pathlist = splitPath(req.URL.Path)
-
+	c.Path = joinPath(c.Pathlist)
 	c.setHandlers()
 	return c
 }
 
 func (c *Context) setHandlers() {
-
 	root := c.engine.trees.getMethodTree(c.Method)
-
 	if node := root.search(c, 0); node != nil && node.handlers != nil {
 		c.handlers = node.handlers
 	} else {
-		c.handlers = append(c.handlers, func(c *Context) {
-			c.String(http.StatusNotFound, "404 not Found !!!")
+		mergedHandlers := append(c.engine.Handlers, func(c *Context) {
+			notFoundHandler(c)
 		})
+		c.handlers = c.engine.addRoute(c.Method, c.Path, mergedHandlers).handlers
 	}
 }
 
@@ -89,4 +90,10 @@ func (c *Context) JSON(code int, obj any) {
 func (c *Context) HTML(code int, name string, obj any) {
 	c.Writer.WriteHeader(code)
 	c.Writer.Header().Set("Content-Type", "text/html")
+}
+
+func notFoundHandler(c *Context) {
+	c.Writer.WriteHeader(http.StatusNotFound)
+	c.Writer.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(c.Writer, "404 not Found !!!")
 }

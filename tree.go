@@ -43,6 +43,7 @@ type node struct {
 const (
 	STATIC = iota
 	PARAM
+	ANY
 )
 
 func newNode(path string, nodeType int) *node {
@@ -57,18 +58,15 @@ func newNode(path string, nodeType int) *node {
 // search
 func (n *node) search(c *Context, index int) *node {
 	subpath := c.Pathlist[index]
-	if subpath == n.path || n.path[1] == ':' {
+	if subpath == n.path || n.nodeType == PARAM || n.nodeType == ANY {
 		// dynamic route
-		if len(n.path) > 3 {
-			if n.path[1] == ':' {
-				param := Param{
-					Key:   n.path[2:],
-					Value: subpath[1:],
-				}
-				c.Params = append(c.Params, param)
+		if n.nodeType == PARAM {
+			param := Param{
+				Key:   n.path[2:],
+				Value: subpath[1:],
 			}
+			c.Params = append(c.Params, param)
 		}
-
 		if index == len(c.Pathlist)-1 {
 			return n
 		} else {
@@ -111,6 +109,10 @@ func (n *node) insert(path string) *node {
 			switch p[0] {
 			case ':':
 				child := newNode(subpath, PARAM)
+				n.children = append(n.children, child)
+				n = child
+			case '*':
+				child := newNode(subpath, ANY)
 				n.children = append(n.children, child)
 				n = child
 			default:

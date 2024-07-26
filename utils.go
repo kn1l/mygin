@@ -16,15 +16,32 @@ func resolveAddress(addr ...string) string {
 	}
 }
 
-func splitPath(path string) []string {
-	pathlist := make([]string, 0)
+func splitPath(path string) (pathlist []string) {
 	pathlist = append(pathlist, "/")
-	for _, p := range strings.Split(path, "/") {
-		if p != "" {
+	tmp := strings.Split(path, "/")
+	for i := 0; i < len(tmp); i++ {
+		p := tmp[i]
+		if p == "." {
+			continue
+		} else if p == ".." {
+			if len(pathlist) > 0 {
+				pathlist = pathlist[:len(pathlist)-1]
+			}
+		} else if p != "" {
 			pathlist = append(pathlist, "/"+p)
 		}
 	}
 	return pathlist
+}
+
+func joinPath(pathlist []string) (path string) {
+	if len(pathlist) == 1 {
+		return "/"
+	}
+	for _, p := range pathlist[1:] {
+		path += p
+	}
+	return path
 }
 
 func errorPrint(err string) {

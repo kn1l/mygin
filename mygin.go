@@ -46,10 +46,12 @@ func Default() *Engine {
 	return engine
 }
 
-func (engine *Engine) addRoute(method, path string, handlers HandlerFuncChain) {
+// addRoute registers a route with its method,path and handlers
+func (engine *Engine) addRoute(method, path string, handlers HandlerFuncChain) *node {
 	root := engine.trees.getMethodTree(method)
 	node := root.insert(path)
 	node.handlers = handlers
+	return node
 }
 
 func (engine *Engine) LoadHTMLFiles(file ...string) {

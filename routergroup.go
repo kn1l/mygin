@@ -1,6 +1,11 @@
 package mygin
 
-import "net/http"
+import (
+	"io"
+	"net/http"
+	"os"
+	"strings"
+)
 
 type RouterGroup struct {
 	Handlers HandlerFuncChain
@@ -75,5 +80,15 @@ func (group *RouterGroup) calcAbsolutePath(relativePath string) string {
 }
 
 func (group *RouterGroup) Static(relativePath string, root string) {
-
+	absolutePath := group.calcAbsolutePath(relativePath)
+	handler := func(c *Context) {
+		file, err := os.Open(root + strings.Replace(c.Path, absolutePath, "", 1))
+		if err != nil {
+			notFoundHandler(c)
+		} else {
+			io.Copy(c.Writer, file)
+		}
+		defer file.Close()
+	}
+	group.GET(relativePath+"/*", handler)
 }
