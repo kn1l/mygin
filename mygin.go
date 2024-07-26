@@ -2,6 +2,7 @@ package mygin
 
 import (
 	"net/http"
+	"text/template"
 )
 
 type HandlerFunc func(*Context)
@@ -12,7 +13,8 @@ type HandlerFuncChain []HandlerFunc
 type Engine struct {
 	RouterGroup
 
-	trees methodTrees
+	trees        methodTrees
+	htmlTemplate *template.Template
 }
 
 // implements Handler
@@ -22,6 +24,7 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for context.index < len(context.handlers) {
 		context.Next()
 	}
+	requestInfoPrint(context.Writer.statusCode, req.Method, req.URL.Path)
 }
 
 func (engine *Engine) Run(addr ...string) error {
@@ -54,10 +57,10 @@ func (engine *Engine) addRoute(method, path string, handlers HandlerFuncChain) *
 	return node
 }
 
-func (engine *Engine) LoadHTMLFiles(file ...string) {
-
+func (engine *Engine) LoadHTMLFiles(filenames ...string) {
+	engine.htmlTemplate = template.Must(template.ParseFiles(filenames...))
 }
 
 func (engine *Engine) LoadHTMLGlob(pattern string) {
-
+	engine.htmlTemplate = template.Must(template.ParseGlob(pattern))
 }

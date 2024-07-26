@@ -18,7 +18,7 @@ type Params []Param
 
 type Context struct {
 	// origin objects
-	Writer  http.ResponseWriter
+	Writer  ResponseWriter
 	Request *http.Request
 
 	handlers HandlerFuncChain
@@ -31,9 +31,19 @@ type Context struct {
 	engine   *Engine
 }
 
+type ResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *ResponseWriter) WriteHeader(statusCode int) {
+	rw.statusCode = statusCode
+	rw.ResponseWriter.WriteHeader(statusCode)
+}
+
 func (engine *Engine) newContext(w http.ResponseWriter, req *http.Request) *Context {
 	c := &Context{
-		Writer:  w,
+		Writer:  ResponseWriter{ResponseWriter: w},
 		Request: req,
 		Method:  req.Method,
 		Path:    req.URL.Path,
@@ -90,6 +100,7 @@ func (c *Context) JSON(code int, obj any) {
 func (c *Context) HTML(code int, name string, obj any) {
 	c.Writer.WriteHeader(code)
 	c.Writer.Header().Set("Content-Type", "text/html")
+	c.engine.htmlTemplate.Lookup(name).Execute(c.Writer, obj)
 }
 
 func notFoundHandler(c *Context) {

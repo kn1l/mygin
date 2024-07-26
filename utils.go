@@ -3,6 +3,7 @@ package mygin
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 func resolveAddress(addr ...string) string {
@@ -55,4 +56,10 @@ func debugPrint(format string, a ...any) {
 
 func normalPrint(format string, a ...any) {
 	fmt.Printf("[MYGIN] "+format+"\n", a...)
+}
+
+func requestInfoPrint(statusCode int, method, path string) {
+	now := time.Now()
+	formattedTime := now.Format("2006-01-02 - 15:04:05")
+	normalPrint(`%v | %v | %v "%v"`, formattedTime, statusCode, method, path)
 }
